@@ -3,10 +3,65 @@
 > **Desarrollo**: Multi-Agent Banking System powered by AMD Instinct MI300X
 > **Hackathon**: AMD Developer Hackathon 2026 (May 4-10, 2026)
 > **Team**: LEAD
+> **Track**: AI Agents & Agentic Workflows
 
 ## Objetivo del Proyecto
 
 Sistema multi-agente de IA para el sector bancario peruano, ejecutando Llama 3.3 70B en AMD MI300X a través de vLLM, orquestado con LangGraph.
+
+## Contexto de Mercado
+
+### Global
+- **Ingresos Fintech 2025**: ~$650 mil millones (21% YoY)
+- **Crecimiento LatAm**: 40% anual (McKinsey)
+- **Agentes en producción**: 57.3% de organizaciones
+- **Predicción Gartner 2028**: 33% de apps con IA agéntica (vs <1% en 2024)
+- **Valor anual agentes IA**: $2.6-4.4 trillones (McKinsey)
+
+### Perú
+- **Ley Fintech**: Vigente desde 2023, sandbox regulatorio SBS
+- **Res. SBS 4142-2025**: Sandbox expandido, SBS como promotor de innovación
+- **Transacciones electrónicas**: 78% del total (vs 45% en 2019)
+- **Startups Fintech**: +220 operando en el país
+- **Open Finance**: Roadmap publicado por SBS en febrero 2026
+- **Regulación IA**: Ley 31814 + ENIA 2026-2030
+- **Mercado Fintech Perú**: ~USD 850 millones (2024), crecimiento 16% anual
+
+**Insight clave**: Perú ha formalizado un marco regulatorio para IA, permitiendo innovación controlada en servicios financieros.
+
+## Stack Tecnológico MVP
+
+### AMD Developer Cloud
+- **GPU**: AMD Instinct MI300X (192GB VRAM)
+- **ROCm**: 7.2.3 (producción) / 7.12.0 (preview)
+- **vLLM**: 0.17.1 (ROCm 7.2.0)
+- **SGLang**: 0.5.9 (alternativa)
+- **PyTorch**: 2.6.0 (ROCm 7.0.0)
+- **Costo**: $1.99/GPU/hr
+- **Créditos Hackathon**: $100 USD (31 días)
+
+### Frameworks
+- **LangChain**: 0.3.x (orquestación)
+- **LangGraph**: 0.4.x (grafos de estado)
+- **FastAPI**: 0.115+ (API)
+- **Pydantic**: 2.0+ (schemas)
+
+### Modelos Recomendados (ROCm-compatible)
+- **Qwen3-Coder 235B**: Generación de código, agentes
+- **Llama 3.3 70B**: Razonamiento general (actual)
+- **DeepSeek-R1 671B**: Razonamiento profundo
+- **Mistral Large 123B**: Multilingüe
+- **Qwen-VL 72B**: Multimodal (OCR documentos)
+
+### Presupuesto Estimado ($100 créditos)
+| Actividad | Horas | Costo |
+|-----------|-------|-------|
+| Setup + Deploy vLLM | 2h | $3.98 |
+| Desarrollo agentes | 20h | $39.80 |
+| Demo y video | 3h | $5.97 |
+| Buffer | 10h | $19.90 |
+| **Total** | **35h** | **$69.65** |
+| **Restante** | | **$30.35** |
 
 ## Estado Actual
 
@@ -279,13 +334,81 @@ Al implementar una nueva feature:
 - **Testing**: Mock vLLM responses para tests unitarios rápidos
 - **Logging**: Usar `src/utils/logger.py` para logs estructurados
 
+## Diferenciadores Competitivos
+
+| Aspecto | Ventaja |
+|---------|---------|
+| **Contexto local** | Regulación SBS peruana, Open Finance, ENIA 2026-2030 |
+| **Multi-agente real** | No es chatbot simple, son agentes especializados coordinados |
+| **AMD-native** | vLLM optimizado para MI300X con ROCm 7.2 |
+| **Business value** | Caso de uso bancario real con métricas de compliance |
+| **Escalabilidad** | Arquitectura lista para producción con LangGraph |
+| **Open Source** | Todo el código disponible en GitHub |
+
+## Roadmap de Implementación Real
+
+### Prioridad 1: Tools con Lógica Real
+1. **banking_tools.py**
+   - Integrar cálculo real de capacidad crediticia
+   - Implementar scoring con reglas SBS (ratio deuda/ingreso 30%)
+   - Conectar con mock database para transacciones
+
+2. **compliance_tools.py**
+   - Implementar verificación UIF (>S/10,000)
+   - Reglas sandbox SBS Res. 4142-2025
+   - Validación contra normativas vigentes
+
+3. **fraud_tools.py**
+   - Algoritmo de velocity checking
+   - Detección de patrones sospechosos
+   - Scoring de riesgo basado en reglas
+
+### Prioridad 2: Integración vLLM Real
+- [ ] Configurar endpoint AMD MI300X
+- [ ] Optimizar prompts para Llama 3.3 70B
+- [ ] Implementar fallback si vLLM no disponible
+- [ ] Métricas de latencia y tokens
+
+### Prioridad 3: Features Avanzadas
+- [ ] OCR de DNI peruano (Qwen-VL)
+- [ ] Persistencia con SQLite/PostgreSQL
+- [ ] Dashboard de métricas
+- [ ] Rate limiting por cliente
+
+### Prioridad 4: Deployment
+- [ ] Dockerizar aplicación
+- [ ] Scripts de deploy a AMD Cloud
+- [ ] CI/CD pipeline completo
+- [ ] Monitoring y logging
+
 ## Issues Conocidos
 
-- Tools con datos hardcoded (prioridad alta para próxima iteración)
+- Tools con datos hardcoded (PRIORIDAD ALTA - siguiente feature)
 - Falta manejo de errores robusto en agents
 - Sin persistencia de conversaciones aún
 - Sin rate limiting en API
 - Warnings de Pydantic (Settings class-based config deprecation)
+- No hay integración real con vLLM en AMD MI300X
+
+## Cronograma Hackathon (May 4-10, 2026)
+
+| Día | Actividad | Estado |
+|-----|-----------|--------|
+| **May 5** | Setup AMD Cloud, deploy vLLM, test conexión | Pendiente |
+| **May 6** | Implementar tools reales (Compliance + Risk) | En progreso |
+| **May 7** | Implementar tools (Advisor + Fraud) + OCR | Planeado |
+| **May 8** | Integración, testing E2E, UI básica | Planeado |
+| **May 9** | Pulir demo, grabar video, submission | Planeado |
+| **May 10** | Submit antes 2:00 PM (hora Perú) | Deadline |
+
+## Submission Checklist
+
+- [ ] Título: "PeruBank AI Agent — Multi-Agent Banking System on AMD"
+- [ ] Repositorio GitHub público
+- [ ] Video demo (3-5 min)
+- [ ] Hugging Face Space publicado
+- [ ] 2 posts técnicos (X: @lablabai + @AIatAMD)
+- [ ] Feedback AMD Developer Experience
 
 ## Logros Recientes
 
@@ -299,9 +422,11 @@ Al implementar una nueva feature:
 - [x] Suite completa de tests (59 tests, 100% coverage en agents)
 - [x] Feature spec: agent-testing.md
 - [x] Metodología spec-driven design implementada
+- [x] Documento MVP completo integrado
 
 ---
 
-**Última actualización**: 2026-05-06 22:00
+**Última actualización**: 2026-05-06 23:30
 **Branch actual**: feature/agents-setup
-**Último commit**: feat(tests): comprehensive agent testing suite
+**Día del Hackathon**: 2/6 (May 6)
+**Siguiente milestone**: Implementar tools con lógica real
