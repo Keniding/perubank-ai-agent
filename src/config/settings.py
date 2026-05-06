@@ -24,13 +24,15 @@ class Settings(BaseSettings):
     DEFAULT_TEMPERATURE: float = 0.1
     MAX_TOKENS: int = 4096
 
+    # MongoDB
+    MONGODB_URI: str = ""
+    MONGODB_DB_NAME: str = "perubank"
+
     # Logging
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = "json"
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 
 @lru_cache
