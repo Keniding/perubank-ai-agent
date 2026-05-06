@@ -1,0 +1,25 @@
+﻿{
+  "regulations": [
+    {
+      "id": "SBS-4142-2025",
+      "name": "Sandbox Regulatorio SBS",
+      "description": "Resolucion que expande el sandbox regulatorio para fintechs",
+      "effective_date": "2025-11-01",
+      "category": "innovation"
+    },
+    {
+      "id": "LEY-31814",
+      "name": "Ley de Regulacion de IA",
+      "description": "Marco regulatorio para inteligencia artificial en Peru",
+      "effective_date": "2026-01-15",
+      "category": "ai_governance"
+    },
+    {
+      "id": "ENIA-2026-2030",
+      "name": "Estrategia Nacional de IA",
+      "description": "Plan nacional para desarrollo y adopcion de IA",
+      "effective_date": "2026-03-01",
+      "category": "strategy"
+    }
+  ]
+}
