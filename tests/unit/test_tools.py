@@ -1,5 +1,7 @@
 """Unit tests for banking tools."""
 
+from unittest.mock import patch
+
 from src.tools.banking_tools import calculate_credit_capacity, check_customer_balance
 from src.tools.compliance_tools import check_sbs_compliance
 from src.tools.fraud_tools import detect_fraud_patterns
@@ -37,7 +39,8 @@ class TestComplianceTools:
 
 
 class TestFraudTools:
-    def test_normal_transaction(self):
+    @patch("src.tools.fraud_tools.random.randint", return_value=5)
+    def test_normal_transaction(self, mock_randint):
         result = detect_fraud_patterns("CLI-TEST", 1000)
         assert result["recommendation"] == "APPROVE"
         assert result["risk_score"] < 0.5

@@ -15,7 +15,7 @@ repos:
 
   # Checks generales
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace      # elimina whitespace en líneas vacías (W293)
       - id: end-of-file-fixer        # asegura newline al final
