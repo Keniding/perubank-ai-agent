@@ -24,7 +24,7 @@ def risk_agent(state: dict) -> dict:
     customer_data = check_customer_balance(state["customer_id"])
     credit_capacity = calculate_credit_capacity(
         monthly_income=customer_data["monthly_income"],
-        existing_debt=1200.0,
+        existing_debt=customer_data["current_debt"],
     )
 
     messages = [

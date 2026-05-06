@@ -1,10 +1,16 @@
 """Fraud detection tools for transaction analysis."""
 
+import logging
 import random
+import uuid
 from datetime import datetime
 
-# Configuración de detección de fraude
-FRAUD_CONFIG = {
+from src.db.sync_wrapper import get_config, save_fraud_check
+
+logger = logging.getLogger(__name__)
+
+# Default configuración de detección de fraude (fallback if MongoDB config not found)
+DEFAULT_FRAUD_CONFIG = {
     "max_transactions_per_hour": 10,  # Velocidad máxima normal
     "max_transaction_amount_normal": 15000.00,  # S/ 15,000 monto normal máximo
     "suspicious_countries": ["VE", "NG", "PK", "RU"],  # ISO códigos países alto riesgo
@@ -13,6 +19,20 @@ FRAUD_CONFIG = {
     "unusual_hour_end": 6,  # 6 AM
     "high_amount_multiplier": 2.0,  # 2x el monto normal = alto riesgo
 }
+
+
+def _get_fraud_config() -> dict:
+    """
+    Get fraud detection configuration from MongoDB or use defaults.
+
+    Returns:
+        Fraud config dict
+    """
+    config = get_config("fraud_config")
+    if config:
+        return config
+    logger.warning("Fraud config not found in MongoDB, using defaults")
+    return DEFAULT_FRAUD_CONFIG
 
 
 def detect_fraud_patterns(
@@ -45,6 +65,9 @@ def detect_fraud_patterns(
     if hour_of_day is None:
         hour_of_day = datetime.now().hour
 
+    # Get configuration from MongoDB
+    fraud_config = _get_fraud_config()
+
     risk_score = 0.0
     anomalies: list[str] = []
     checks = {}
@@ -54,7 +77,7 @@ def detect_fraud_patterns(
     # En producción: query a database de últimas transacciones
     transactions_last_hour = random.randint(0, 15)
 
-    if transactions_last_hour > FRAUD_CONFIG["max_transactions_per_hour"]:
+    if transactions_last_hour > fraud_config["max_transactions_per_hour"]:
         risk_score += 0.3
         anomalies.append("velocity_spike")
         checks["velocity_check"] = "FAIL"
@@ -64,7 +87,7 @@ def detect_fraud_patterns(
         checks["transactions_last_hour"] = transactions_last_hour
 
     # 2. Amount Deviation Analysis
-    normal_max = FRAUD_CONFIG["max_transaction_amount_normal"]
+    normal_max = fraud_config["max_transaction_amount_normal"]
 
     if transaction_amount > normal_max:
         # Calcular desviación
@@ -74,7 +97,7 @@ def detect_fraud_patterns(
         amount_risk = min(0.25 * deviation_factor, 0.4)
         risk_score += amount_risk
 
-        if deviation_factor > FRAUD_CONFIG["high_amount_multiplier"]:
+        if deviation_factor > fraud_config["high_amount_multiplier"]:
             anomalies.append("amount_extreme")
             checks["amount_deviation"] = "EXTREME"
         else:
@@ -94,7 +117,7 @@ def detect_fraud_patterns(
         risk_score += 0.15
         anomalies.append("foreign_location")
 
-        if location_country in FRAUD_CONFIG["suspicious_countries"]:
+        if location_country in fraud_config["suspicious_countries"]:
             # País de alto riesgo
             risk_score += 0.25
             anomalies.append("high_risk_country")
@@ -110,7 +133,7 @@ def detect_fraud_patterns(
     # 4. Device Fingerprint Analysis
     if device_fingerprint == "unknown":
         # Dispositivo nuevo/desconocido
-        risk_score += FRAUD_CONFIG["device_change_risk_increase"]
+        risk_score += fraud_config["device_change_risk_increase"]
         anomalies.append("unknown_device")
         checks["device_fingerprint"] = "UNKNOWN"
     elif device_fingerprint == "suspicious":
@@ -121,8 +144,8 @@ def detect_fraud_patterns(
         checks["device_fingerprint"] = "KNOWN"
 
     # 5. Time Pattern Analysis
-    unusual_start = FRAUD_CONFIG["unusual_hour_start"]
-    unusual_end = FRAUD_CONFIG["unusual_hour_end"]
+    unusual_start = fraud_config["unusual_hour_start"]
+    unusual_end = fraud_config["unusual_hour_end"]
 
     # Horario inusual: 11 PM - 6 AM
     if hour_of_day >= unusual_start or hour_of_day < unusual_end:
@@ -157,7 +180,7 @@ def detect_fraud_patterns(
         action_required = "block_and_investigate"
         anomalies.append("critical_risk")
 
-    return {
+    result = {
         "customer_id": customer_id,
         "transaction_amount": transaction_amount,
         "risk_score": risk_score,
@@ -171,6 +194,29 @@ def detect_fraud_patterns(
         "timestamp": datetime.now().isoformat(),
         "fraud_detection_version": "1.0",
     }
+
+    # Save fraud check to MongoDB for audit trail
+    try:
+        fraud_data = {
+            "fraud_check_id": str(uuid.uuid4()),
+            "customer_id": customer_id,
+            "transaction_amount": transaction_amount,
+            "location_country": location_country,
+            "device_fingerprint": device_fingerprint,
+            "hour_of_day": hour_of_day,
+            "risk_score": risk_score,
+            "risk_category": result["risk_category"],
+            "anomalies_detected": anomalies,
+            "recommendation": recommendation,
+            "action_required": action_required,
+            "confidence": confidence,
+            "created_at": datetime.now(),
+        }
+        save_fraud_check(fraud_data)
+    except Exception as e:
+        logger.error(f"Failed to save fraud check: {e}")
+
+    return result
 
 
 def _categorize_risk(score: float) -> str:

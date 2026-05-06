@@ -1,84 +1,50 @@
 """Banking tools for customer data and financial calculations."""
 
+import logging
 import random
+import uuid
+from datetime import datetime
 
-# Mock Database en memoria - Clientes reales para demo
-MOCK_CUSTOMERS = {
-    "CLI-2026-001": {
-        "name": "Juan Pérez García",
-        "dni": "12345678",
-        "monthly_income": 8500.00,
-        "current_debt": 1200.00,
-        "credit_score": 745,
-        "account_soles": 15420.50,
-        "account_dolares": 3200.00,
-        "employment_type": "dependiente",
-        "years_employed": 3,
-        "sector": "servicios",
-    },
-    "CLI-2026-002": {
-        "name": "María Rodriguez Lopez",
-        "dni": "87654321",
-        "monthly_income": 12000.00,
-        "current_debt": 3500.00,
-        "credit_score": 820,
-        "account_soles": 32500.75,
-        "account_dolares": 8500.00,
-        "employment_type": "independiente",
-        "years_employed": 5,
-        "sector": "comercio",
-    },
-    "CLI-2026-003": {
-        "name": "Carlos Gomez Sanchez",
-        "dni": "45678912",
-        "monthly_income": 5500.00,
-        "current_debt": 1800.00,
-        "credit_score": 680,
-        "account_soles": 8200.30,
-        "account_dolares": 1500.00,
-        "employment_type": "dependiente",
-        "years_employed": 2,
-        "sector": "manufactura",
-    },
-    "CLI-2026-DEMO": {
-        "name": "Cliente Demo Hackathon",
-        "dni": "99999999",
-        "monthly_income": 8500.00,
-        "current_debt": 1200.00,
-        "credit_score": 745,
-        "account_soles": 15420.50,
-        "account_dolares": 3200.00,
-        "employment_type": "dependiente",
-        "years_employed": 3,
-        "sector": "tecnologia",
-    },
+from src.db.sync_wrapper import (
+    get_config,
+    get_customer,
+    get_customer_transactions,
+    save_credit_calculation,
+)
+
+logger = logging.getLogger(__name__)
+
+# Default configurations (fallback if MongoDB config not found)
+DEFAULT_BANKING_CONFIG = {
+    "max_debt_ratio_sbs": 0.30,  # 30% según SBS
+    "tea_default": 0.18,  # 18% TEA promedio mercado peruano
+    "income_ranges": [3000, 4500, 5500, 8000, 10000, 12000, 15000],
+    "credit_score_min": 550,
+    "credit_score_max": 850,
+    "balance_soles_min": 1000,
+    "balance_soles_max": 50000,
+    "balance_dolares_min": 500,
+    "balance_dolares_max": 10000,
 }
 
-MOCK_TRANSACTIONS = {
-    "CLI-2026-001": [
-        {"date": "2026-05-04", "amount": -250.00, "type": "pago", "desc": "Luz del Sur"},
-        {"date": "2026-05-03", "amount": 5000.00, "type": "deposito", "desc": "Nómina"},
-        {"date": "2026-05-02", "amount": -1200.00, "type": "transferencia", "desc": "Alquiler"},
-        {"date": "2026-05-01", "amount": -85.50, "type": "compra", "desc": "Supermercado"},
-        {"date": "2026-04-30", "amount": -120.00, "type": "pago", "desc": "Teléfono"},
-    ],
-    "CLI-2026-002": [
-        {"date": "2026-05-05", "amount": 8000.00, "type": "deposito", "desc": "Venta comercio"},
-        {"date": "2026-05-03", "amount": -2500.00, "type": "pago", "desc": "Proveedor"},
-        {
-            "date": "2026-05-01",
-            "amount": -450.00,
-            "type": "transferencia",
-            "desc": "Alquiler local",
-        },
-        {"date": "2026-04-29", "amount": 6500.00, "type": "deposito", "desc": "Venta comercio"},
-    ],
-}
+
+def _get_banking_config() -> dict:
+    """
+    Get banking configuration from MongoDB or use defaults.
+
+    Returns:
+        Banking configuration dict
+    """
+    config = get_config("banking_config")
+    if config:
+        return config
+    logger.warning("Banking config not found in MongoDB, using defaults")
+    return DEFAULT_BANKING_CONFIG
 
 
 def check_customer_balance(customer_id: str) -> dict:
     """
-    Consulta saldo y perfil del cliente.
+    Consulta saldo y perfil del cliente desde MongoDB.
 
     Args:
         customer_id: ID del cliente (ej: CLI-2026-001)
@@ -86,19 +52,37 @@ def check_customer_balance(customer_id: str) -> dict:
     Returns:
         Dict con balance, transacciones, scoring y perfil
     """
-    if customer_id not in MOCK_CUSTOMERS:
+    # Try to get customer from MongoDB
+    customer = get_customer(customer_id)
+
+    if not customer:
         # Cliente nuevo - generar perfil aleatorio para testing
+        logger.info(f"Customer {customer_id} not found, generating random profile")
         return _generate_random_customer(customer_id)
 
-    customer = MOCK_CUSTOMERS[customer_id]
-    transactions = MOCK_TRANSACTIONS.get(customer_id, [])
+    # Get recent transactions from MongoDB
+    transactions = get_customer_transactions(customer_id, limit=5)
+
+    # Format transactions for response
+    formatted_transactions = []
+    for txn in transactions:
+        raw_date = txn.get("date")
+        date_str = raw_date.isoformat() if isinstance(raw_date, datetime) else raw_date
+        formatted_transactions.append(
+            {
+                "date": date_str,
+                "amount": txn.get("amount"),
+                "type": txn.get("type"),
+                "desc": txn.get("description", ""),
+            }
+        )
 
     return {
         "customer_id": customer_id,
         "name": customer["name"],
         "balance_soles": customer["account_soles"],
         "balance_dolares": customer["account_dolares"],
-        "last_transactions": transactions[:5],  # Últimas 5 transacciones
+        "last_transactions": formatted_transactions,
         "credit_score": customer["credit_score"],
         "monthly_income": customer["monthly_income"],
         "current_debt": customer["current_debt"],
@@ -122,15 +106,14 @@ def calculate_credit_capacity(monthly_income: float, existing_debt: float) -> di
     Returns:
         Dict con capacidad disponible y montos máximos por plazo
     """
-    max_debt_ratio_sbs = 0.30  # 30% según SBS
+    # Get configuration from MongoDB
+    config = _get_banking_config()
+    max_debt_ratio_sbs = config.get("max_debt_ratio_sbs", 0.30)
+    tea = config.get("tea_default", 0.18)
 
     # Capacidad mensual disponible
     max_monthly_debt = monthly_income * max_debt_ratio_sbs
     available_capacity = max_monthly_debt - existing_debt
-
-    # TEA (Tasa Efectiva Anual) promedio mercado peruano 2026: 18%
-    # Fuente: SBS - Tasa promedio préstamos personales
-    tea = 0.18
 
     def calculate_max_loan(months: int, available_monthly: float) -> float:
         """
@@ -169,7 +152,7 @@ def calculate_credit_capacity(monthly_income: float, existing_debt: float) -> di
     # Ratio actual
     current_ratio = existing_debt / monthly_income if monthly_income > 0 else 1.0
 
-    return {
+    result = {
         "monthly_income": monthly_income,
         "existing_monthly_debt": existing_debt,
         "available_monthly_capacity": round(available_capacity, 2),
@@ -180,8 +163,22 @@ def calculate_credit_capacity(monthly_income: float, existing_debt: float) -> di
         "debt_ratio_max_sbs": max_debt_ratio_sbs,
         "compliant_sbs": current_ratio < max_debt_ratio_sbs,
         "tea_assumed": tea,
-        "calculation_note": "TEA 18% (promedio mercado peruano SBS 2026)",
+        "calculation_note": f"TEA {tea:.0%} (promedio mercado peruano SBS 2026)",
     }
+
+    # Save calculation to MongoDB for audit trail
+    try:
+        calc_data = {
+            "calculation_id": str(uuid.uuid4()),
+            "customer_id": "unknown",  # Will be set by caller if available
+            **result,
+            "created_at": datetime.now(),
+        }
+        save_credit_calculation(calc_data)
+    except Exception as e:
+        logger.error(f"Failed to save credit calculation: {e}")
+
+    return result
 
 
 def _generate_random_customer(customer_id: str) -> dict:
@@ -194,8 +191,10 @@ def _generate_random_customer(customer_id: str) -> dict:
     Returns:
         Dict con perfil aleatorio realista
     """
+    config = _get_banking_config()
+
     # Rangos de ingreso realistas en Perú
-    income_ranges = [3000, 4500, 5500, 8000, 10000, 12000, 15000]
+    income_ranges = config.get("income_ranges", [3000, 4500, 5500, 8000, 10000, 12000, 15000])
     income = random.choice(income_ranges)
 
     # Deuda proporcional al ingreso (10-40%)
@@ -203,13 +202,21 @@ def _generate_random_customer(customer_id: str) -> dict:
     debt = round(income * debt_ratio, 2)
 
     # Score crediticio realista
-    score = random.randint(550, 850)
+    score_min = config.get("credit_score_min", 550)
+    score_max = config.get("credit_score_max", 850)
+    score = random.randint(score_min, score_max)
+
+    # Balance ranges
+    balance_soles_min = config.get("balance_soles_min", 1000)
+    balance_soles_max = config.get("balance_soles_max", 50000)
+    balance_dolares_min = config.get("balance_dolares_min", 500)
+    balance_dolares_max = config.get("balance_dolares_max", 10000)
 
     return {
         "customer_id": customer_id,
         "name": f"Cliente {customer_id[-4:]}",
-        "balance_soles": round(random.uniform(1000, 50000), 2),
-        "balance_dolares": round(random.uniform(500, 10000), 2),
+        "balance_soles": round(random.uniform(balance_soles_min, balance_soles_max), 2),
+        "balance_dolares": round(random.uniform(balance_dolares_min, balance_dolares_max), 2),
         "last_transactions": [],
         "credit_score": score,
         "monthly_income": income,
