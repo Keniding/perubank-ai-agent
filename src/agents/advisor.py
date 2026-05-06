@@ -1,14 +1,14 @@
-﻿"""
+"""
 Advisor Agent - Personalized financial recommendations.
 Contextualizes advice for the Peruvian market.
 """
 
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 
 from src.config.settings import settings
-from src.tools.banking_tools import check_customer_balance
 from src.prompts.system_prompts import ADVISOR_PROMPT
+from src.tools.banking_tools import check_customer_balance
 
 
 def advisor_agent(state: dict) -> dict:
@@ -20,9 +20,9 @@ def advisor_agent(state: dict) -> dict:
         temperature=0.3,
         max_tokens=settings.MAX_TOKENS,
     )
-    
+
     customer_data = check_customer_balance(state["customer_id"])
-    
+
     messages = [
         SystemMessage(content=ADVISOR_PROMPT),
         HumanMessage(
@@ -30,9 +30,9 @@ def advisor_agent(state: dict) -> dict:
             f"Consulta: {state['messages'][-1].content}"
         ),
     ]
-    
+
     response = llm.invoke(messages)
-    
+
     return {
         **state,
         "recommendation": response.content,

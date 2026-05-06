@@ -1,7 +1,9 @@
-﻿"""Health check endpoint."""
+"""Health check endpoint."""
+
+from datetime import datetime
 
 from fastapi import APIRouter
-from datetime import datetime
+
 from src.config.settings import settings
 from src.models.schemas import HealthResponse
 

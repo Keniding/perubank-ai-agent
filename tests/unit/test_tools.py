@@ -1,6 +1,6 @@
-﻿"""Unit tests for banking tools."""
+"""Unit tests for banking tools."""
 
-from src.tools.banking_tools import check_customer_balance, calculate_credit_capacity
+from src.tools.banking_tools import calculate_credit_capacity, check_customer_balance
 from src.tools.compliance_tools import check_sbs_compliance
 from src.tools.fraud_tools import detect_fraud_patterns
 

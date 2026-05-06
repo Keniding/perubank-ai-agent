@@ -1,4 +1,4 @@
-﻿"""Pytest configuration and fixtures."""
+"""Pytest configuration and fixtures."""
 
 import pytest
 
@@ -11,6 +11,7 @@ def sample_customer_id():
 @pytest.fixture
 def sample_state():
     from langchain_core.messages import HumanMessage
+
     return {
         "messages": [HumanMessage(content="Quiero un prestamo de S/20,000")],
         "customer_id": "CLI-2026-TEST",

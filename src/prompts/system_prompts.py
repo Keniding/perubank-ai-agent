@@ -1,4 +1,4 @@
-﻿"""System prompts for all banking agents."""
+"""System prompts for all banking agents."""
 
 ORCHESTRATOR_PROMPT = """Eres el orquestador del sistema bancario PeruBank AI.
 Tu rol es analizar la consulta del cliente y decidir que agente activar.

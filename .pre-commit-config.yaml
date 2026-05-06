@@ -1,0 +1,29 @@
+# ============================================================
+# Pre-commit hooks - PeruBank AI Agent
+# Ejecutar: uv run pre-commit install
+# Manual:   uv run pre-commit run --all-files
+# ============================================================
+
+repos:
+  # Ruff: linter + formatter (reemplaza isort + flake8 + pyupgrade)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.12
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  # Checks generales
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace      # elimina whitespace en líneas vacías (W293)
+      - id: end-of-file-fixer        # asegura newline al final
+      - id: check-yaml               # valida YAML (ci.yml, docker-compose)
+      - id: check-toml               # valida pyproject.toml
+      - id: check-merge-conflict     # detecta markers de merge sin resolver
+      - id: check-added-large-files  # bloquea archivos > 500KB
+        args: [--maxkb=500]
+      - id: debug-statements         # detecta breakpoint() / pdb olvidados
+      - id: no-commit-to-branch      # protege main de commits directos
+        args: [--branch, main]

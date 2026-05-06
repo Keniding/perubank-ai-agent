@@ -1,6 +1,7 @@
-﻿"""Structured logging configuration."""
+"""Structured logging configuration."""
 
 import structlog
+
 from src.config.settings import settings
 
 
