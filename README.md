@@ -141,11 +141,11 @@ perubank-ai-agent/
 
 | Member | Role |
 |--------|------|
-| Lizbeth Davila | Team Leader |
-| Henry Keniding Tarazona | Backend / Agents |
-| Daniel Ibanez | Infrastructure / AMD |
-| Matthew Zegarra | Frontend / Demo |
-| Joaquin (Unknown Hacker) | Testing / Docs |
+| Daniel Ibanez | Team Leader |
+| Henry Keniding Tarazona | AI Agent Engineer |
+| Lizbeth Davila | Marketing & Communications |
+| Matthew Zegarra | Hardware & AMD Infrastructure |
+| Joaquin | Frontend Developer |
 
 ## License
 

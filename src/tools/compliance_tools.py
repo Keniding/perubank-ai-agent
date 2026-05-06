@@ -1,4 +1,4 @@
-﻿"""Compliance tools for SBS/BCRP regulatory checks."""
+"""Compliance tools for SBS/BCRP regulatory checks."""
 
 
 def check_sbs_compliance(operation_type: str, amount: float) -> dict:

@@ -1,14 +1,14 @@
-﻿"""
+"""
 Compliance Agent - SBS/BCRP regulatory verification.
 Specialized in Peruvian banking regulations.
 """
 
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 
 from src.config.settings import settings
-from src.tools.compliance_tools import check_sbs_compliance
 from src.prompts.system_prompts import COMPLIANCE_PROMPT
+from src.tools.compliance_tools import check_sbs_compliance
 
 
 def compliance_agent(state: dict) -> dict:
@@ -20,12 +20,12 @@ def compliance_agent(state: dict) -> dict:
         temperature=settings.DEFAULT_TEMPERATURE,
         max_tokens=settings.MAX_TOKENS,
     )
-    
+
     compliance_result = check_sbs_compliance(
         operation_type="general",
         amount=15000.0,
     )
-    
+
     messages = [
         SystemMessage(content=COMPLIANCE_PROMPT),
         HumanMessage(
@@ -33,9 +33,9 @@ def compliance_agent(state: dict) -> dict:
             f"Consulta: {state['messages'][-1].content}"
         ),
     ]
-    
+
     response = llm.invoke(messages)
-    
+
     return {
         **state,
         "compliance_check": compliance_result,

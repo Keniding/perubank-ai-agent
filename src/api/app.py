@@ -1,11 +1,11 @@
-﻿"""FastAPI application for PeruBank AI Agent."""
+"""FastAPI application for PeruBank AI Agent."""
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.config.settings import settings
 from src.api.routes.chat import router as chat_router
 from src.api.routes.health import router as health_router
+from src.config.settings import settings
 
 app = FastAPI(
     title=settings.APP_NAME,

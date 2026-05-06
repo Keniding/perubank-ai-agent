@@ -1,4 +1,4 @@
-﻿"""Banking tools for customer data and financial calculations."""
+"""Banking tools for customer data and financial calculations."""
 
 
 def check_customer_balance(customer_id: str) -> dict:
@@ -24,7 +24,7 @@ def calculate_credit_capacity(monthly_income: float, existing_debt: float) -> di
     """Calculate credit capacity per SBS regulations."""
     max_debt_ratio = 0.30  # SBS maximum debt-to-income ratio
     available_capacity = (monthly_income * max_debt_ratio) - existing_debt
-    
+
     return {
         "monthly_income": monthly_income,
         "existing_monthly_debt": existing_debt,

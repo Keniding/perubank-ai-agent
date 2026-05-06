@@ -1,21 +1,21 @@
-﻿"""Pydantic schemas for API requests and responses."""
+"""Pydantic schemas for API requests and responses."""
+
+from datetime import datetime
 
 from pydantic import BaseModel, Field
-from typing import Optional
-from datetime import datetime
 
 
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=2000)
     customer_id: str = Field(default="CLI-ANONYMOUS")
-    session_id: Optional[str] = None
+    session_id: str | None = None
 
 
 class ChatResponse(BaseModel):
     response: str
     agent_used: str
-    risk_score: Optional[float] = None
-    compliance_check: Optional[dict] = None
+    risk_score: float | None = None
+    compliance_check: dict | None = None
     timestamp: datetime = Field(default_factory=datetime.now)
 
 

@@ -1,4 +1,4 @@
-﻿"""Fraud detection tools for transaction analysis."""
+"""Fraud detection tools for transaction analysis."""
 
 
 def detect_fraud_patterns(customer_id: str, transaction_amount: float) -> dict:
