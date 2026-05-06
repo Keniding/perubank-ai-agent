@@ -59,10 +59,12 @@ Sistema multi-agente de IA para el sector bancario peruano, ejecutando Llama 3.3
    - [x] Banner y display de estado
 
 9. **Tests**
-   - [x] `tests/conftest.py` configurado
+   - [x] `tests/conftest.py` con fixtures completos y mocks
    - [x] `tests/unit/test_tools.py` básico
    - [x] `tests/integration/test_graph.py` básico
-   - **NOTA**: Cobertura aún limitada
+   - [x] `tests/unit/test_agents/` - Suite completa (59 tests)
+   - [x] **Coverage: 100% en src/agents/ (97/97 statements)**
+   - **Spec**: docs/features/agent-testing.md
 
 ### Pendiente / Mock
 
@@ -73,10 +75,10 @@ Sistema multi-agente de IA para el sector bancario peruano, ejecutando Llama 3.3
    - [ ] OCR para KYC (mencionado en README pero no implementado)
 
 2. **Testing**
-   - [ ] Tests unitarios completos para todos los agentes
+   - [x] Tests unitarios completos para todos los agentes (59/59 passing)
    - [ ] Tests de integración end-to-end
    - [ ] Tests de carga/performance
-   - [ ] Coverage objetivo: >80%
+   - [x] Coverage objetivo: >80% (actualmente 100% en agents)
 
 3. **Documentación**
    - [ ] `docs/api/` está vacío
@@ -280,10 +282,10 @@ Al implementar una nueva feature:
 ## Issues Conocidos
 
 - Tools con datos hardcoded (prioridad alta para próxima iteración)
-- Coverage de tests bajo (<50% actualmente)
 - Falta manejo de errores robusto en agents
 - Sin persistencia de conversaciones aún
 - Sin rate limiting en API
+- Warnings de Pydantic (Settings class-based config deprecation)
 
 ## Logros Recientes
 
@@ -294,8 +296,12 @@ Al implementar una nueva feature:
 - [x] 4 agentes especializados implementados
 - [x] API FastAPI lista
 - [x] CLI interactivo con Rich
+- [x] Suite completa de tests (59 tests, 100% coverage en agents)
+- [x] Feature spec: agent-testing.md
+- [x] Metodología spec-driven design implementada
 
 ---
 
-**Última actualización**: 2026-05-06
-**Branch actual**: develop → feature/agents-setup (próximo)
+**Última actualización**: 2026-05-06 22:00
+**Branch actual**: feature/agents-setup
+**Último commit**: feat(tests): comprehensive agent testing suite
