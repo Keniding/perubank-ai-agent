@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "Multi-Agent Banking System powered by AMD Instinct MI300X"
 readme = "README.md"
 license = { text = "MIT" }
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 authors = [
     { name = "Team LEAD", email = "team-lead@example.com" },
 ]
@@ -58,7 +58,7 @@ asyncio_mode = "auto"
 
 [tool.black]
 line-length    = 100
-target-version = ["py313"]
+target-version = ["py312", "py313"]
 
 [tool.ruff]
 line-length    = 100
@@ -76,6 +76,6 @@ select = ["E", "F", "W", "I", "N", "UP"]
 "notebooks/*" = ["ALL"]
 
 [tool.mypy]
-python_version      = "3.13"
+python_version      = "3.12"
 warn_return_any     = true
 warn_unused_configs = true
